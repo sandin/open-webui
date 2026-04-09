@@ -12,7 +12,9 @@
 
 	import Textarea from '$lib/components/common/Textarea.svelte';
 	import Knowledge from '$lib/components/workspace/Models/Knowledge.svelte';
+	import ToolsSelector from '$lib/components/workspace/Models/ToolsSelector.svelte';
 	import { getFolderById } from '$lib/apis/folders';
+	import { tools } from '$lib/stores';
 	const i18n = getContext('i18n');
 
 	export let show = false;
@@ -29,7 +31,8 @@
 	};
 	let data = {
 		system_prompt: '',
-		files: []
+		files: [],
+		tool_ids: []
 	};
 
 	let loading = false;
@@ -76,7 +79,8 @@
 			};
 			data = folder.data || {
 				system_prompt: '',
-				files: []
+				files: [],
+				tool_ids: []
 			};
 		}
 
@@ -103,7 +107,8 @@
 		};
 		data = {
 			system_prompt: '',
-			files: []
+			files: [],
+			tool_ids: []
 		};
 	}
 </script>
@@ -225,6 +230,15 @@
 									bind:value={data.system_prompt}
 								/>
 							</div>
+						</div>
+					{/if}
+
+					{#if $tools && $tools.length > 0}
+						<div class="my-2">
+							<ToolsSelector
+								tools={$tools}
+								bind:selectedToolIds={data.tool_ids}
+							/>
 						</div>
 					{/if}
 

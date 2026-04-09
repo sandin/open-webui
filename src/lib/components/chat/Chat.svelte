@@ -299,7 +299,33 @@
 		const model = atSelectedModel ?? $models.find((m) => m.id === selectedModels[0]);
 		if (model) {
 			// Set Default Tools
-			if (model?.info?.meta?.toolIds) {
+			// Priority: folder > model > settings
+			if ($selectedFolder?.data?.tool_ids && $selectedFolder.data.tool_ids.length > 0) {
+				// Use folder's default tools
+				const defaultIds = [
+					...new Set(
+						$selectedFolder.data.tool_ids.filter((id) => $tools.find((t) => t.id === id))
+					)
+				];
+
+				// Separate unauthenticated OAuth tools
+				const unauthed = [];
+				const authed = [];
+				for (const id of defaultIds) {
+					const tool = $tools.find((t) => t.id === id);
+					if (tool && tool.authenticated === false) {
+						const parts = id.split(':');
+						const serverId = parts.at(-1) ?? id;
+						const authType =
+							parts.length > 1 ? (parts[0] === 'server' ? parts[1] : parts[0]) : null;
+						unauthed.push({ id, name: tool.name ?? id, serverId, authType });
+					} else {
+						authed.push(id);
+					}
+				}
+				selectedToolIds = authed;
+				pendingOAuthTools = unauthed;
+			} else if (model?.info?.meta?.toolIds) {
 				const defaultIds = [
 					...new Set(
 						[...(model?.info?.meta?.toolIds ?? [])].filter((id) => $tools.find((t) => t.id === id))
